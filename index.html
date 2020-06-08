@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<script src="./qwebchannel.js"></script>
+	<meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+	<style type="text/css">
+	body, html,#allmap {width: 100%;height: 100%;overflow: hidden;margin:0;font-family:"微软雅黑";}
+	</style>
+</head>
+<body>
+    <div id="allmap"></div>
+</body>
+</html>
+<script type="text/javascript">
+//百度地图API功能
+function loadJScript() {
+	var script = document.createElement("script");
+	script.type = "text/javascript";
+	script.src = "http://api.map.baidu.com/api?v=2.0&ak=6jnpZpGDlMdNjRqRjw5GRMGogt50dwaG&callback=init";
+	document.body.appendChild(script);
+}
+
+var warnings = new Array();
+var lonlatsLoaded = false;
+var startPoint;
+function init() {
+	var channel;
+	var map = new BMap.Map("allmap");
+	map.enableScrollWheelZoom();  //启用滚轮放大缩小
+	map.enableDragging();
+	map.disableDoubleClickZoom();
+
+	var data_info;
+	var opts = {
+				width : 250,     		// 信息窗口宽度
+				height: 100,      		// 信息窗口高度
+				title : "告警点信息" ,   // 信息窗口标题
+				enableMessage:true		// 设置允许信息窗发送短息
+			   };
+
+	function infoCallback(content, point) {
+		//console.log("marker lon=" + p.getPosition().lng + " lats=" + p.getPosition().lat);
+		var msg = content + " \n " + map.getDistance(point,startPoint).toFixed(2)+"米. \n ";
+		window.bridge.GetMeasureDataOfPos(point.lng, point.lat, function (data) {
+			msg += data;
+			var infoWindow = new BMap.InfoWindow(msg, opts);  		// 创建信息窗口对象 
+			map.openInfoWindow(infoWindow, point); 					// 开启信息窗口
+		});
+	}
+
+	// 加告警点
+	function addMarker(point, content) {
+		var marker = new BMap.Marker(point);
+		marker.addEventListener("click", function(e) {
+			var p = e.target;
+			var po = new BMap.Point(p.getPosition().lng, p.getPosition().lat);
+			infoCallback(content, po);
+		});
+		map.addOverlay(marker);
+		warnings.push(marker);
+	}
+
+	function getWarnings() {
+		window.bridge.GetWarnings(function (warns) {
+			if (warns.length == 0) {
+				return;
+			}
+			
+			for (var i = 0; i < warnings.length; ++i) {
+				map.removeOverlay(warnings[i]);
+			}
+
+			warnings = [];
+			data_info = [];
+			
+			for (var i = 0; i < warns.length; ++i) {
+				var p = warns[i].split(",");
+				var point = new BMap.Point(p[0], p[1]);
+				var content = "经纬度:"+warns[i] + " \n 与初始点距离:";
+				data_info.push([p[0], p[1]]);
+				addMarker(point, content);
+			}
+		});
+	}
+
+	function getDatas() {
+		window.bridge.GetData(function (lonlats) {
+			if (lonlats.length == 0) {
+				return;
+			}
+
+			var arr = new Array();
+			for (var i = 0; i < lonlats.length; ++i) {
+				var p = lonlats[i].split(",");
+				var point = new BMap.Point(p[0], p[1]);
+				arr.push(point);
+			}
+
+			startPoint = arr[0];
+
+			if (document.createElement('canvas').getContext) {
+				// 加显示点（为了后续用户点击使用）
+				var options = {
+					size: BMAP_POINT_SIZE_SMALL,
+					shape: BMAP_POINT_SHAPE_CIRCLE,
+					color: '#d340c3'
+				}
+				var pointCollection = new BMap.PointCollection(arr, options);  // 初始化PointCollection
+				pointCollection.addEventListener('click', function (e) {
+					var content = "经纬度:"+ e.point.lng + "," + e.point.lat + " \n 与初始点距离:";
+					infoCallback(content, e.point);
+				});
+				map.addOverlay(pointCollection);  // 添加Overlay
+
+				// 加折线
+				var options2 = {
+					strokeWeight:1,	 		//折线的宽度，以像素为单位
+					strokeOpacity:0,
+					//strokeStyle:dashed,
+					enableMassClear:false,
+					enableClicking:false,
+					strokeColor: "black"
+				};
+				var polyline = new BMap.Polyline(arr, options2);
+				lonlatsLoaded = true;
+				map.addOverlay(polyline);
+			} else {
+				alert("请使用chrome！");
+			};
+		});
+	}
+
+	map.addEventListener("tilesloaded",function() {
+		if (lonlatsLoaded) {	// 已经加载过lonlat数据
+			console.log("loaded! true");
+		} else {
+			getDatas();
+		}
+	}); // 地图加载完毕回调
+
+	var menu = new BMap.ContextMenu();
+	var txtMenuItem = [
+		{
+			text:'返回数据模式',
+			callback:function(){returnDataView()}
+		}
+	];
+	for(var i=0; i < txtMenuItem.length; i++){
+		menu.addItem(new BMap.MenuItem(txtMenuItem[i].text, txtMenuItem[i].callback, 100));
+	}
+	map.addContextMenu(menu);
+
+	var ctrlNav = new BMap.NavigationControl({anchor:BMAP_ANCHOR_TOP_LEFT, type:BMAP_NAVIGATION_CONTROL_LARGE});
+	map.addControl(ctrlNav);
+	map.setMapStyle({style:"light"});
+
+	channel = new QWebChannel(qt.webChannelTransport, function(channel) {
+		window.bridge = channel.objects.bridge;
+		window.bridge.sigUpdateData.connect(function() {
+			if (!lonlatsLoaded) {
+				getDatas();
+			}
+			
+			getWarnings();
+		});
+
+		// 设置百度地图中心位置
+		window.bridge.GetCenterName(function (centerName) {
+			map.centerAndZoom(centerName, 12);
+		});
+	});
+}
+
+window.onload = loadJScript;  //异步加载地图
+
+function returnDataView()
+{
+	window.bridge.SwitchDataView();
+}
+</script>
