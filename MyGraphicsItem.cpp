@@ -31,7 +31,7 @@ MyGraphicsItem::MyGraphicsItem(int _y_pos, MyGraphicsScene *scene, QWidget *pare
     m_colorScale = nullptr;
 
     // 左侧小图
-    m_view = new ThumbnailPlot(this);
+    m_view = new ThumbnailPlot(this, parent);
     m_view->resize(GRAPHICS_ITEM_WIDTH, GRAPHICS_ITEM_HEIGHT);
     m_view->xAxis->ticker()->setTickCount(8);
     m_view->yAxis->ticker()->setTickCount(8);
@@ -54,7 +54,6 @@ MyGraphicsItem::MyGraphicsItem(int _y_pos, MyGraphicsScene *scene, QWidget *pare
     m_receiver->start();
     m_receiver->SetDataAccepter(this);
 
-    //qRegisterMetaType<DBusData>("DBusData");
     connect(m_receiver, &DataReceiver::DataReady2, this, &MyGraphicsItem::DataIn);
 
     m_scene->AddItem(this);
@@ -178,6 +177,8 @@ void MyGraphicsItem::Create3DPlot(MyGraphicsScene *scene, QWidget *parent, PLOT_
 void MyGraphicsItem::Destory()
 {
     m_receiver->Stop();
+    //m_worker->Stop();
+
     m_scene->RemoveItem(this);
 }
 
@@ -253,6 +254,11 @@ void MyGraphicsItem::HideMain()
     default:
         return;
     }
+}
+
+void MyGraphicsItem::show()
+{
+    m_view->show();
 }
 
 void MyGraphicsItem::SetXYLable(const QString &xName, const QString &yName)
@@ -889,7 +895,6 @@ void MyGraphicsItem::RemoveBaseLine()
 bool MyGraphicsItem::SetMultiLineCount(int count)
 {
     if (PLOT_TYPE::PLOT_2D_HIS_MAIN == m_plotType) {
-        std::cout << ".........:" << count << std::endl;
         m_multilineLock.lock();
         for (int i = 0; i < count - 1; ++i) {
             QCPGraph *graph = m_view->addGraph();

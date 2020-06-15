@@ -5,8 +5,8 @@
 #include <iostream>
 #include "MyGraphicsScene.h"
 
-ThumbnailPlot::ThumbnailPlot(MyGraphicsItem *item)
-    : m_item(item)
+ThumbnailPlot::ThumbnailPlot(MyGraphicsItem *item, QWidget *parent)
+    : QCustomPlot(parent), m_item(item)
 {
 
 }

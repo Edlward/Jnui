@@ -126,7 +126,9 @@ MySelectMemu::MySelectMemu(MyCustomPlot *plot, const QPoint &pos, int lineCount)
         });
     }
 
-    if (!m_plot->m_dragMode && m_plot->IsMainView()) {
+    if (!m_plot->m_dragMode && m_plot->IsMainView() &&
+            (m_plot->m_pauseDataUpdate || m_plot->m_plotType == PLOT_TYPE::PLOT_2D_HIS_MAIN ||
+             m_plot->m_plotType == PLOT_TYPE::PLOT_2D_HIS_SUB)) {
         action = new QAction(this);
         if (!m_plot->m_choosePointMode) {
             action->setText(QString("进入取点模式"));

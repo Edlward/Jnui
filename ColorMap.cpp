@@ -645,7 +645,7 @@ void ColorMap::ShowMenu(QMouseEvent *event)
         });
     }
 
-    if (m_pauseDataUpdate) {
+    if (m_pauseDataUpdate || IsHisView()) {
         action = new QAction(this);
         if (!m_choosePointMode) {
             action->setText(QString("进入取点模式"));
@@ -725,7 +725,7 @@ void ColorMap::mousePressEvent(QMouseEvent *event)
     }
 
     // 先判断选点
-    if (m_pauseDataUpdate && m_choosePointMode && event->button() == Qt::LeftButton) {
+    if (m_choosePointMode && event->button() == Qt::LeftButton) {
         if (ChoosePoints(event->localPos())) {
             return;
         }
@@ -737,22 +737,22 @@ void ColorMap::mousePressEvent(QMouseEvent *event)
         bool moveLine = false;
         if (m_xLines[0] != nullptr) {
             double y = yAxis->pixelToCoord(event->pos().y());
-            if (qAbs(m_xLines[0]->first - y) <= 20) {
+            if (qAbs(m_xLines[0]->first - y) <= 2) {
                 m_preX = m_xLines[0]->first;
                 moveLine = true;
                 //std::cout<< "pre:" << m_preX << std::endl;
-            } else if (m_xLines[1] != nullptr && qAbs(m_xLines[1]->first - y) <= 20) {
+            } else if (m_xLines[1] != nullptr && qAbs(m_xLines[1]->first - y) <= 2) {
                 m_preX = m_xLines[1]->first;
                 moveLine = true;
                 //std::cout<< "pre:" << m_preX << std::endl;
             }
         } else if (m_yLines[0] != nullptr) {
             double x = xAxis->pixelToCoord(event->pos().x());
-            if (qAbs(m_yLines[0]->first - x) <= 20) {
+            if (qAbs(m_yLines[0]->first - x) <= 2) {
                 m_preX = m_yLines[0]->first;
                 moveLine = true;
                 //std::cout<< "pre:" << m_preX << std::endl;
-            } else if (m_yLines[1] != nullptr && qAbs(m_yLines[1]->first - x) <= 20) {
+            } else if (m_yLines[1] != nullptr && qAbs(m_yLines[1]->first - x) <= 2) {
                 m_preX = m_yLines[1]->first;
                 moveLine = true;
                 //std::cout<< "pre:" << m_preX << std::endl;
@@ -876,7 +876,7 @@ void ColorMap::mouseReleaseEvent(QMouseEvent *event)
         double y1 = yAxis->pixelToCoord(yp1);
         double y2 = yAxis->pixelToCoord(yp2);
         //std::cout << x1 << " " << x2 << " " << y1 << " " << y2 << std::endl;
-        if (qAbs(x1 - x2) >=4 && qAbs(y1 - y2) >= 4) {
+        if (qAbs(x1 - x2) >=1 && qAbs(y1 - y2) >= 1) {
             xAxis->setRange(x1, x2);
             yAxis->setRange(y1, y2);
         }
@@ -1158,11 +1158,7 @@ void ColorMap::keyReleaseEvent(QKeyEvent *event)
 
 bool ColorMap::ChoosePoints(const QPointF &pos)
 {
-    if (!m_pauseDataUpdate) {
-        return false;
-    }
-
-    double minDiff = 1;
+    double minDiff = 1000;
     int xIndex, yIndex;
     bool get = false;
     double x = xAxis->pixelToCoord(pos.x());
@@ -1170,8 +1166,7 @@ bool ColorMap::ChoosePoints(const QPointF &pos)
     int count = m_xDatas[0].count();
     for (int j = 0; j < count; ++j) {
         double diff = qAbs(m_xDatas[0][j] - x);
-        std::cout<< "ChoosePoint enter x:" << x << " x2:" << m_xDatas[0][j] << std::endl;
-        if (diff <= minDiff && diff <= 1) {
+        if (diff <= minDiff && diff <= 0.5) {
             minDiff = diff;
             xIndex = j;
             get = true;
@@ -1188,16 +1183,16 @@ bool ColorMap::ChoosePoints(const QPointF &pos)
     }
 
     get = false;
-    minDiff = 1;
+    minDiff = 1000;
     for (int i = 0; i < m_yDatas[0].count(); ++i) {
-        int diff = qAbs(m_yDatas[0][i] - y);
-        if (minDiff >= diff && diff < 1) {
-            get = true;
+        double diff = qAbs(m_yDatas[0][i] - y);
+        if (minDiff >= diff) {
             yIndex = i;
+            minDiff = diff;
         }
     }
 
-    if (!get) {
+    if (minDiff > 0.5) {
         return false;
     }
 

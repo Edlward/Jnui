@@ -129,6 +129,7 @@ public:
     void Destory();
 
     void replot();
+    void show();
 
     friend DataReceiver;
     friend ThumbnailPlot;

@@ -497,22 +497,22 @@ void MyCustomPlot::mousePressEvent(QMouseEvent *event)
         bool moveLine = false;
         if (m_xLines[0] != nullptr) {
             double y = yAxis->pixelToCoord(event->localPos().y());
-            if (qAbs(m_xLines[0]->first - y) <= 20) {
+            if (qAbs(m_xLines[0]->first - y) <= 2) {
                 m_preX = m_xLines[0]->first;
                 moveLine = true;
                 //std::cout<< "pre:" << m_preX << std::endl;
-            } else if (m_xLines[1] != nullptr && qAbs(m_xLines[1]->first - y) <= 20) {
+            } else if (m_xLines[1] != nullptr && qAbs(m_xLines[1]->first - y) <= 2) {
                 m_preX = m_xLines[1]->first;
                 moveLine = true;
                 //std::cout<< "pre:" << m_preX << std::endl;
             }
         } else if (m_yLines[0] != nullptr) {
             double x = xAxis->pixelToCoord(event->localPos().x());
-            if (qAbs(m_yLines[0]->first - x) <= 20) {
+            if (qAbs(m_yLines[0]->first - x) <= 2) {
                 m_preX = m_yLines[0]->first;
                 moveLine = true;
                 //std::cout<< "pre:" << m_preX << std::endl;
-            } else if (m_yLines[1] != nullptr && qAbs(m_yLines[1]->first - x) <= 20) {
+            } else if (m_yLines[1] != nullptr && qAbs(m_yLines[1]->first - x) <= 2) {
                 m_preX = m_yLines[1]->first;
                 moveLine = true;
                 //std::cout<< "pre:" << m_preX << std::endl;
@@ -628,18 +628,17 @@ void MyCustomPlot::mouseReleaseEvent(QMouseEvent *event)
             yStart += y;
             yEnd += y;
             yAxis->setRange(yStart, yEnd);
+            if (m_baseLineIndex >= 0) {
+                int yStart2 = yAxis2->range().lower;
+                int yEnd2 = yAxis2->range().upper;
+                yStart2 += y;
+                yEnd2 += y;
+                yAxis2->setRange(yStart2, yEnd2);
+            }
             goto show;
         }
 
         if (m_baseLineIndex < 0 || x < (m_xEnd - m_xStart)/2) {
-//            if (m_baseLineIndex < 0) {
-//                x = x - xAxis->pixelToCoord(event->pos().x());
-//                m_xStart = m_xStart + x;
-//                m_xEnd = m_xEnd + x;
-//                xAxis->setRange(m_xStart, m_xEnd);
-//                m_item->SetXRange(m_xStart, m_xEnd);
-//            }
-
             m_yStart = m_yStart + y;
             m_yEnd = m_yEnd + y;
             yAxis->setRange(m_yStart, m_yEnd);
@@ -660,6 +659,7 @@ show:
     }
 
     if (m_rubberBand) {  // 鼠标框放大
+        m_isWheeled = true;
         const QRect zoomRect = m_rubberBand->geometry();
         int xp1, yp1, xp2, yp2;
         zoomRect.getCoords(&xp1, &yp1, &xp2, &yp2);
@@ -667,8 +667,8 @@ show:
         double x2 = xAxis->pixelToCoord(xp2);
         double y1 = yAxis->pixelToCoord(yp1);
         double y2 = yAxis->pixelToCoord(yp2);
-        std::cout << x1 << " " << x2 << " " << y1 << " " << y2 << std::endl;
-        if (qAbs(x1 - x2) >=4 && qAbs(y1 - y2) >= 4) {
+        //std::cout << x1 << " " << x2 << " " << y1 << " " << y2 << std::endl;
+        if (qAbs(x1 - x2) >=1 && qAbs(y1 - y2) >= 1) {
             xAxis->setRange(x1, x2);
             yAxis->setRange(y1, y2);
         }
@@ -993,7 +993,7 @@ void MyCustomPlot::RemoveBaseLine()
 
 bool MyCustomPlot::ChoosePoints(const QPointF &pos)
 {
-    double minDiff = 1;
+    double minDiff = 1000;
     int xIndex, yIndex;
     bool get = false;
     double x = xAxis->pixelToCoord(pos.x());
@@ -1002,7 +1002,7 @@ bool MyCustomPlot::ChoosePoints(const QPointF &pos)
     auto &vec = m_xDatas[0];        // 因为x轴的数值都是固定的，所以只拿一个的就可以了
     for (int j = 0; j < count; ++j) {
         double diff = qAbs(vec[j] - x);
-        if (diff <= minDiff && diff <= 1) {
+        if (diff <= minDiff && diff <= 0.5) {
             minDiff = diff;
             xIndex = j;
             get = true;
@@ -1018,16 +1018,16 @@ bool MyCustomPlot::ChoosePoints(const QPointF &pos)
     }
 
     get = false;
-    minDiff = 1;
+    minDiff = 1000;
     for (int i = 0; i < m_xDatas.count(); ++i) {
-        int diff = qAbs(m_yDatas[i][xIndex] - y);
-        if (minDiff >= diff && diff < 1) {
-            get = true;
+        double diff = qAbs(m_yDatas[i][xIndex] - y);
+        if (minDiff >= diff) {
             yIndex = i;
+            minDiff = diff;
         }
     }
 
-    if (!get) {
+    if (minDiff > 0.5) {
         return false;
     }
 

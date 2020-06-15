@@ -10,7 +10,7 @@ class MyGraphicsItem;
 class ThumbnailPlot : public QCustomPlot
 {
 public:
-    ThumbnailPlot(MyGraphicsItem *item);
+    ThumbnailPlot(MyGraphicsItem *item, QWidget *parent);
     virtual ~ThumbnailPlot();
 
 protected:
