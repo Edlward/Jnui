@@ -464,22 +464,24 @@ void ColorMap::ShowMenu(QMouseEvent *event)
             }
         });
 
-        action = new QAction(tr("进入地图模式"), this);
-        menu.addAction(action);
-        connect(action, &QAction::triggered, this,
-            [&](){
-            if (!m_baiduMap) {
-                m_baiduMap = new BaiduMap(m_parentWidget, this, m_baiduMapCenter, m_appPath);
+        if (CanEnterBaiduMap()) {
+            action = new QAction(tr("进入地图模式"), this);
+            menu.addAction(action);
+            connect(action, &QAction::triggered, this,
+                [&](){
                 if (!m_baiduMap) {
-                    return;
+                    m_baiduMap = new BaiduMap(m_parentWidget, this, m_baiduMapCenter, m_appPath);
+                    if (!m_baiduMap) {
+                        return;
+                    }
                 }
-            }
 
-            m_baiduMap->UpdateData(m_lons, m_lats);
-            this->hide();   // hide this widget
-            m_baiduMap->show();
-            m_isBaiduMap = true;
-        });
+                m_baiduMap->UpdateData(m_lons, m_lats);
+                this->hide();   // hide this widget
+                m_baiduMap->show();
+                m_isBaiduMap = true;
+            });
+        }
     }
 
     if (!m_pauseDataUpdate) {
@@ -642,6 +644,11 @@ void ColorMap::ShowMenu(QMouseEvent *event)
             if (!m_pauseDataUpdate) {
                 ClearAllChoosedPoints();
             }
+            if (!m_pauseDataUpdate && m_choosePointMode) { // 恢复数据更新时，如果在取点模式下直接退出取点模式
+                ClearAllChoosedPoints();
+                m_choosePointMode = false;
+                RemoveChoosePointsGraph();
+            }
         });
     }
 
@@ -656,13 +663,12 @@ void ColorMap::ShowMenu(QMouseEvent *event)
         connect(action, &QAction::triggered, this,
             [&](){
             m_choosePointMode = !m_choosePointMode;
+            ClearAllChoosedPoints();
             if (m_choosePointMode) {
                 AddChoosePointsGraph();
             } else {
                 RemoveChoosePointsGraph();
             }
-
-            ClearAllChoosedPoints();
         });
     }
 
@@ -1365,13 +1371,12 @@ QString ColorMap::GetMeasureDataOfPos(double lon, double lat)
     return ret;
 }
 
-//void ColorMap::wheelEvent(QWheelEvent *event)
-//{
-//    m_isWheeled = true;
-//    QCustomPlot::wheelEvent(event);
-//}
-
 void ColorMap::SetAppPath(const QString &appPath)
 {
     m_appPath = appPath;
+}
+
+bool ColorMap::CanEnterBaiduMap()
+{
+    return (!m_lons.empty() && m_lons.count() > 0);
 }

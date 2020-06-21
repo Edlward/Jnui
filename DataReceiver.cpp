@@ -41,9 +41,9 @@ void DataReceiver::run()
                 GetDataFromDbus(data);
             } else if (m_type == PLOT_TYPE::PLOT_2D_HIS_MAIN ||
                        m_type == PLOT_TYPE::PLOT_3D_HIS_MAIN) { // 历史数据
-                std::cout << "precess start" << std::endl;
+                //std::cout << "precess start" << std::endl;
                 GetHisDatas(data);
-                std::cout << "precess end" << std::endl;
+                //std::cout << "precess end" << std::endl;
             }
         }
 
@@ -81,7 +81,7 @@ void DataReceiver::DataIn(DBusData *data)
     m_mutex.lock();
     m_dataIn = true;
     m_datas.push_back(data);
-    std::cout << "cout:" << m_datas.count() << " path:" << m_path.toStdString() << std::endl;
+    //std::cout << "cout:" << m_datas.count() << " path:" << m_path.toStdString() << std::endl;
     m_cond.notify_one();
     m_mutex.unlock();
 }

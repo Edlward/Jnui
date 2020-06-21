@@ -120,6 +120,7 @@ private:
     void ClearAllChoosedPoints();
     void BuildTimeSubViewDatas(const QPointF &pos, MyGraphicsItem *item);
     void BuildPosSubViewDatas(const QPointF &pos, MyGraphicsItem *item);
+    bool CanEnterBaiduMap();
 
     struct ChoosePoint {
         int lineIndex;

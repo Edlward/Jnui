@@ -1,4 +1,5 @@
-﻿#ifndef MYCUSTOMPLOT_H
+﻿
+#ifndef MYCUSTOMPLOT_H
 #define MYCUSTOMPLOT_H
 
 #pragma execution_character_set("utf-8")
@@ -67,6 +68,8 @@ public:
     void BuildHisSubPlotDatas(const QPointF &pos, QVector<double> &xDatas, QVector<double> &yDatas);
 
     friend MySelectMemu;
+public slots:
+   void setAxisRange(const QCPRange &range);
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
@@ -99,6 +102,8 @@ private:
     void ClearAllChoosedPoints();
     void ShowMenu();
     void ExitMenu();
+    bool CanChooseBaseLine();
+    bool CanEnterBaiduMap();
 
     virtual bool IsMainView() {
         return ((PLOT_TYPE::PLOT_2D_MAIN == m_plotType) || (PLOT_TYPE::PLOT_2D_HIS_MAIN == m_plotType));
@@ -118,9 +123,6 @@ private:
             point.setY(pos.y());
         }
     };
-
-private slots:
-   void SetAxisRange(QCPRange);
 
 private:
     MyGraphicsScene *m_scene;

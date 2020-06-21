@@ -242,8 +242,8 @@ void MyCustomPlot::InterMultilineMode()
     }
 
     bool ok;
-    int input = QInputDialog::getInt(this, tr("lines"),
-                                 tr("请输入同时显示线的个数:"), 2, 2, MAX_MULTILINE_COUNT, 1, &ok);
+    int input = QInputDialog::getInt(this, "lines",
+                                 "请输入同时显示线的个数:", 2, 2, MAX_MULTILINE_COUNT, 1, &ok);
     if (ok) {
         m_item->InterMultilineMode(input);
 
@@ -848,10 +848,11 @@ void MyCustomPlot::replot()
     QCustomPlot::replot();
 }
 
-void MyCustomPlot::SetAxisRange(QCPRange)
+void MyCustomPlot::setAxisRange(const QCPRange & range)
 {
-    xAxis->setRangeLower(m_xStart);
-    yAxis->setRangeLower(m_yStart);
+    if (m_isWheeled) {
+        yAxis2->setRange(range);
+    }
 }
 
 void MyCustomPlot::CreateTextDisplayer(bool xDirection)
@@ -907,10 +908,12 @@ void MyCustomPlot::AdjustTextDisplayerPos()
 
 void MyCustomPlot::SetBaseLine(int index)
 {
-    if (m_xDatas.count() < index) {
+    m_multilineLock.lock();
+    if (!m_xDatas.empty() && m_xDatas.count() < index) {
+        m_multilineLock.unlock();
         return;
     }
-    m_multilineLock.lock();
+
     m_baseLineIndex = index - 1;
     if (!m_baseGraph) {
         yAxis2->setTicks(true);
@@ -926,6 +929,12 @@ void MyCustomPlot::SetBaseLine(int index)
         m_y2End = DEFAULT_2D_Y2AXIS_END;
         m_baseGraph = addGraph(xAxis, yAxis);
         m_baseGraph->setPen(GetColor(1));
+
+        QList<QCPAxis*> x, y;
+        x.append(xAxis);
+        y.append(yAxis);
+        y.append(yAxis2);
+        axisRect()->setRangeZoomAxes(x, y);
     }
 
     m_xBase = m_xDatas[m_baseLineIndex];
@@ -971,6 +980,11 @@ void MyCustomPlot::RemoveBaseLine()
         yAxis2->setSubTicks(false);
         yAxis2->grid()->setSubGridVisible(false);
         yAxis2->setTickLabels(false);
+
+        QList<QCPAxis*> x, y;
+        x.append(xAxis);
+        y.append(yAxis);
+        axisRect()->setRangeZoomAxes(x, y);
     }
 
     yAxis->setRange(m_yStart, m_yEnd);
@@ -1393,4 +1407,21 @@ void MyCustomPlot::wheelEvent(QWheelEvent *event)
 void MyCustomPlot::SetAppPath(const QString &appPath)
 {
     m_appPath = appPath;
+}
+
+bool MyCustomPlot::CanChooseBaseLine()
+{
+    bool ret = false;
+    m_multilineLock.lock();
+    if (m_multilineMode && !m_xDatas.empty() && m_xDatas.count() == m_multilineCount && m_baseLineIndex < 0) {
+        ret = true;
+    }
+    m_multilineLock.unlock();
+
+    return ret;
+}
+
+bool MyCustomPlot::CanEnterBaiduMap()
+{
+    return (!m_lons.empty() && m_lons.count() > 0);
 }

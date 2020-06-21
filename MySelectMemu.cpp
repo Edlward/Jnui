@@ -60,7 +60,9 @@ MySelectMemu::MySelectMemu(MyCustomPlot *plot, const QPoint &pos, int lineCount)
             });
         }
 
-        if (m_plot->m_plotType == PLOT_TYPE::PLOT_2D_MAIN || m_plot->m_plotType == PLOT_TYPE::PLOT_2D_HIS_MAIN) {
+        if ((m_plot->m_plotType == PLOT_TYPE::PLOT_2D_MAIN ||
+             m_plot->m_plotType == PLOT_TYPE::PLOT_2D_HIS_MAIN) &&
+             m_plot->CanEnterBaiduMap()) {
             action = new QAction(tr("进入地图模式"), this);
             menu.addAction(action);
             connect(action, &QAction::triggered, this, [=] {
@@ -95,6 +97,13 @@ MySelectMemu::MySelectMemu(MyCustomPlot *plot, const QPoint &pos, int lineCount)
         connect(action, &QAction::triggered, this,
             [&](){
             m_plot->m_pauseDataUpdate = !m_plot->m_pauseDataUpdate;
+            //std::cout << "数据更新:" << m_plot->m_pauseDataUpdate << " " << m_plot->m_choosePointMode << std::endl;
+            if (!m_plot->m_pauseDataUpdate && m_plot->m_choosePointMode) { // 恢复数据更新时，如果在取点模式下直接退出取点模式
+                //std::cout << "退出取点，恢复数据更新" << std::endl;
+                m_plot->ClearAllChoosedPoints();
+                m_plot->m_choosePointMode = false;
+                m_plot->ExitChoosePointMode();
+            }
         });
     }
 
@@ -138,6 +147,7 @@ MySelectMemu::MySelectMemu(MyCustomPlot *plot, const QPoint &pos, int lineCount)
         menu.addAction(action);
         connect(action, &QAction::triggered, this,
             [&](){
+            m_plot->ClearAllChoosedPoints();
             m_plot->m_choosePointMode = !m_plot->m_choosePointMode;
             if (m_plot->m_choosePointMode) {
                 m_plot->InterChoosePointMode();
@@ -171,7 +181,7 @@ MySelectMemu::MySelectMemu(MyCustomPlot *plot, const QPoint &pos, int lineCount)
         });
     }
 
-    if (m_plot->m_baseLineIndex < 0 && m_plot->IsMainView()) {
+    if (m_plot->m_baseLineIndex < 0 && m_plot->IsMainView() && m_plot->CanChooseBaseLine()) {
         m_subMenu = new QMenu(this);
         m_subMenu->setTitle("选定基线:");
         for (int i = 0; i < m_lineCount; ++i) {
