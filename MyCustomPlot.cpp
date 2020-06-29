@@ -295,6 +295,10 @@ void MyCustomPlot::ZoomReset()
     m_isWheeled = false;
     xAxis->setRange(m_xStart, m_xEnd);
     yAxis->setRange(m_yStart, m_yEnd);
+    if (m_baseLineIndex >= 0) {
+        yAxis2->setRange(m_y2Start, m_y2End);
+    }
+
     replot();
 }
 
@@ -671,6 +675,9 @@ show:
         if (qAbs(x1 - x2) >=1 && qAbs(y1 - y2) >= 1) {
             xAxis->setRange(x1, x2);
             yAxis->setRange(y1, y2);
+            if (m_baseLineIndex >= 0) {
+                yAxis2->setRange(y1, y2);
+            }
         }
 
         m_rubberBand->hide();
