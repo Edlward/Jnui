@@ -672,7 +672,7 @@ show:
         double y1 = yAxis->pixelToCoord(yp1);
         double y2 = yAxis->pixelToCoord(yp2);
         //std::cout << x1 << " " << x2 << " " << y1 << " " << y2 << std::endl;
-        if (qAbs(x1 - x2) >=1 && qAbs(y1 - y2) >= 1) {
+        if (qAbs(x1 - x2) >= 1 && qAbs(y1 - y2) >= 1) {
             xAxis->setRange(x1, x2);
             yAxis->setRange(y1, y2);
             if (m_baseLineIndex >= 0) {

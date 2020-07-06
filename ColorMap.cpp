@@ -882,7 +882,7 @@ void ColorMap::mouseReleaseEvent(QMouseEvent *event)
         double y1 = yAxis->pixelToCoord(yp1);
         double y2 = yAxis->pixelToCoord(yp2);
         //std::cout << x1 << " " << x2 << " " << y1 << " " << y2 << std::endl;
-        if (qAbs(x1 - x2) >=1 && qAbs(y1 - y2) >= 1) {
+        if (qAbs(x1 - x2) >= 2 && qAbs(y1 - y2) >= 2) {
             xAxis->setRange(x1, x2);
             yAxis->setRange(y1, y2);
         }
@@ -1172,7 +1172,8 @@ bool ColorMap::ChoosePoints(const QPointF &pos)
     int count = m_xDatas[0].count();
     for (int j = 0; j < count; ++j) {
         double diff = qAbs(m_xDatas[0][j] - x);
-        if (diff <= minDiff && diff <= 2) {
+        // std::cout << "diff=" << diff << ",x=" << x << ",x1" << m_xDatas[0][j] << std::endl;
+        if (diff <= minDiff && diff <= 0.5) {
             minDiff = diff;
             xIndex = j;
             get = true;
@@ -1198,7 +1199,7 @@ bool ColorMap::ChoosePoints(const QPointF &pos)
         }
     }
 
-    if (minDiff > 2) {
+    if (minDiff > 0.5) {
         return false;
     }
 
