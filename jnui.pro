@@ -1,6 +1,7 @@
 QT += gui printsupport webenginewidgets core widgets charts
 
 TEMPLATE = lib
+#TEMPLATE =  app
 DEFINES += JNUI_LIBRARY
 
 CONFIG += c++11

@@ -1,7 +1,29 @@
 ﻿#ifndef COMMON_H
 #define COMMON_H
 
-#pragma execution_character_set("utf-8")
+/**@file Common.h-文件名
+* @brief      指令文件
+* @details
+* @mainpage   工程概览
+* @author     lzy
+* @email      jnuerlzy@gmail.com
+* @version    V1.0
+* @date       2020-12-22
+* @copyright  Copyright (c) 2020-2022 广州凌远技术有限公司
+************************************************************
+* @attention
+* 硬件平台：xx   ;
+* 软件版本： Qt5.12.3 msvc2017 64bit
+* @par 修改日志
+* <table>
+* <tr><th>Date        <th>Version  <th>Author  <th>Description
+* <tr><td>2020/11/30  <td>1.0      <td>lzy     <td>初始版本
+* </table>
+*
+************************************************************
+*/
+
+#pragma execution_character_set("utf-8")///<指示char的执行字符集是UTF-8编码。
 
 #include <QColor>
 
@@ -26,6 +48,10 @@ const int GRAPHICS_ITEM_HEIGHT = 200;             // item高度
 const int PCM_PLAYER_BUFFER_STRIPE_SIZE = 16*1024;
 const int PCM_PLAYER_BUFFER_COUNT = 8;
 
+/**
+ * @brief The PLOT_TYPE enum
+ * 图类型枚举类型，内联文档
+ */
 enum PLOT_TYPE
 {
     PLOT_2D_MAIN,        // 曲线主图
@@ -64,8 +90,20 @@ enum COLOR_TYPE
     CL_LINEN,       // rgb(250, 240, 230) = 17
     CL_MAX,
 };
-
+/**
+ * @brief GetColor
+ * 给实时2D余晖模式线条配颜色
+ * @param index
+ * @return
+ */
 QColor GetColor(int index);
+
+/**
+ * @brief GetColorStyle
+ * 给历史2D图选择基线配上颜色
+ * @param index
+ * @return
+ */
 QString GetColorStyle(int index);
 
 

@@ -13,6 +13,7 @@ MyGraphicsScene::MyGraphicsScene(QWidget *parent, Jnui *jnui, PLOT_TYPE type)
 {
     setSceneRect(0, 0, GRAPHICS_SCENE_WIDTH, 4800);   // 最后一个值大小比gview的最后一个值大就会出现滚动条
 
+    /// 新建左侧缩略图的视图
     m_gView = new MyGraphicsView(this, parent);
     if (!m_gView) {
         return;
@@ -41,7 +42,7 @@ MyGraphicsScene::~MyGraphicsScene()
     delete m_gView;
 }
 
-void MyGraphicsScene::Resize(int width, int height)
+void MyGraphicsScene::Resize(int width, int height)//调整矩形图像大小
 {
     setSceneRect(0, 0, GRAPHICS_SCENE_WIDTH, height*2);
     m_gView->resize(GRAPHICS_SCENE_WIDTH, height);
@@ -51,7 +52,7 @@ void MyGraphicsScene::Resize(int width, int height)
     }
 }
 
-MyGraphicsItem * MyGraphicsScene::NewSubView(const QPointF &pos, PLOT_TYPE type, int recordCount)
+MyGraphicsItem * MyGraphicsScene::NewSubView(const QPointF &pos, PLOT_TYPE type, int recordCount)//新子图
 {
     m_curY += GRAPHICS_ITEM_HEIGHT;
     MyGraphicsItem *item = new MyGraphicsItem(m_curY+m_scrollBarPos, this, m_parent, type);
@@ -84,7 +85,7 @@ MyGraphicsItem * MyGraphicsScene::NewSubView(const QPointF &pos, PLOT_TYPE type,
     return item;
 }
 
-void MyGraphicsScene::AddItem(MyGraphicsItem *item)
+void MyGraphicsScene::AddItem(MyGraphicsItem *item)//增加一条数据
 {
     if (m_curItem == nullptr) {
         m_curItem = item;
@@ -105,7 +106,7 @@ void MyGraphicsScene::AddItem(MyGraphicsItem *item)
     }
 }
 
-void MyGraphicsScene::RemoveItem(MyGraphicsItem *item)
+void MyGraphicsScene::RemoveItem(MyGraphicsItem *item)//删除一条数据
 {
     m_curY -= GRAPHICS_ITEM_HEIGHT;
     m_itemList.removeOne(item);

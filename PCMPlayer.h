@@ -1,7 +1,29 @@
 ﻿#ifndef PCMPLAYER_H
 #define PCMPLAYER_H
 
-#pragma execution_character_set("utf-8")
+/**@file MySelectMemu.h-文件名
+* @brief      脉码调制
+* @details
+* @mainpage   工程概览
+* @author     lzy
+* @email      jnuerlzy@gmail.com
+* @version    V1.0
+* @date       2020-12-22
+* @copyright  Copyright (c) 2020-2022 广州凌远技术有限公司
+************************************************************
+* @attention
+* 硬件平台：xx   ;
+* 软件版本： Qt5.12.3 msvc2017 64bit
+* @par 修改日志
+* <table>
+* <tr><th>Date        <th>Version  <th>Author  <th>Description
+* <tr><td>2020/11/30  <td>1.0      <td>lzy     <td>初始版本
+* </table>
+*
+************************************************************
+*/
+
+#pragma execution_character_set("utf-8")///<指示char的执行字符集是UTF-8编码。
 
 #include <QThread>
 #include "Common.h"

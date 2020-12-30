@@ -25,13 +25,13 @@ void ThumbnailPlot::mousePressEvent(QMouseEvent *event)
         if (!m_item->IsSubPlot()) {
             return;
         }
-
         QMenu menu(m_item->m_parent);   // 不要设置成this，会引起double free
         QAction action1(tr("删除子图"), m_item->m_parent);
         action1.setData(1);
         menu.addAction(&action1);
 
-        connect(&action1, &QAction::triggered, this, [&] () {
+        connect(&action1, &QAction::triggered, this, [&] ()
+        {
             m_item->Destory();
         });
         menu.exec(QCursor::pos());
